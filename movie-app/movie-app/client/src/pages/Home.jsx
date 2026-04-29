@@ -4,6 +4,7 @@ import Filters from '../components/Filters'
 import MovieCard from '../components/MovieCard'
 import './Home.css'
 
+const BASE = import.meta.env.VITE_API_URL || ''
 const DEFAULT_FILTERS = { language: '', genre: '', year: '', rating: '' }
 
 export default function Home() {
@@ -17,9 +18,8 @@ export default function Home() {
   const [totalResults, setTotalResults] = useState(0)
   const debounceRef = useRef(null)
 
-  // Load genres once
   useEffect(() => {
-    axios.get('/api/genres')
+    axios.get(`${BASE}/api/genres`)
       .then(r => setGenres(r.data))
       .catch(() => {})
   }, [])
@@ -34,7 +34,7 @@ export default function Home() {
       if (activeFilters.year)     params.year     = activeFilters.year
       if (activeFilters.rating)   params.rating   = activeFilters.rating
 
-      const res = await axios.get('/api/movies', { params })
+      const res = await axios.get(`${BASE}/api/movies`, { params })
       if (pageNum === 1) {
         setMovies(res.data.movies)
       } else {
@@ -49,7 +49,6 @@ export default function Home() {
     }
   }, [])
 
-  // Debounce filter changes
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(() => {
@@ -59,14 +58,8 @@ export default function Home() {
     return () => clearTimeout(debounceRef.current)
   }, [filters, fetchMovies])
 
-  const handleFilterChange = (newFilters) => {
-    setFilters(newFilters)
-  }
-
-  const handleReset = () => {
-    setFilters(DEFAULT_FILTERS)
-  }
-
+  const handleFilterChange = (newFilters) => setFilters(newFilters)
+  const handleReset = () => setFilters(DEFAULT_FILTERS)
   const loadMore = () => {
     const nextPage = page + 1
     setPage(nextPage)
@@ -77,7 +70,6 @@ export default function Home() {
 
   return (
     <div className="app">
-      {/* Top nav */}
       <header className="nav">
         <div className="nav-inner">
           <span className="nav-logo">🎬 CineFind</span>
@@ -86,17 +78,9 @@ export default function Home() {
       </header>
 
       <div className="layout">
-        {/* Left: Filters */}
-        <Filters
-          filters={filters}
-          genres={genres}
-          onChange={handleFilterChange}
-          onReset={handleReset}
-        />
+        <Filters filters={filters} genres={genres} onChange={handleFilterChange} onReset={handleReset} />
 
-        {/* Right: Movies */}
         <main className="movies-pane">
-          {/* Results bar */}
           <div className="results-bar">
             <span className="results-count">
               {loading && page === 1 ? 'Loading...' : `${totalResults.toLocaleString()} movies`}
@@ -106,19 +90,14 @@ export default function Home() {
             )}
           </div>
 
-          {/* Error */}
           {error && <div className="error-msg">{error}</div>}
 
-          {/* Grid */}
           {movies.length > 0 && (
             <div className="movies-grid">
-              {movies.map(movie => (
-                <MovieCard key={movie.id} movie={movie} />
-              ))}
+              {movies.map(movie => <MovieCard key={movie.id} movie={movie} />)}
             </div>
           )}
 
-          {/* Empty */}
           {!loading && movies.length === 0 && !error && (
             <div className="empty-state">
               <span className="empty-icon">🎞️</span>
@@ -127,7 +106,6 @@ export default function Home() {
             </div>
           )}
 
-          {/* Load more */}
           {movies.length > 0 && page < totalPages && (
             <div className="load-more-wrap">
               <button className="btn-load-more" onClick={loadMore} disabled={loading}>
@@ -136,7 +114,6 @@ export default function Home() {
             </div>
           )}
 
-          {/* Loading skeleton */}
           {loading && page === 1 && (
             <div className="movies-grid">
               {Array.from({ length: 12 }).map((_, i) => (

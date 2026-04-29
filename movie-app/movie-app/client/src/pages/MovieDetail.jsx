@@ -6,6 +6,7 @@ import './MovieDetail.css'
 const IMG_BASE     = 'https://image.tmdb.org/t/p/w500'
 const TMDB_DETAIL  = 'https://api.themoviedb.org/3/movie'
 const LOGO_BASE    = 'https://image.tmdb.org/t/p/w92'
+const BASE         = import.meta.env.VITE_API_URL || ''
 
 export default function MovieDetail() {
   const { id } = useParams()
@@ -22,7 +23,7 @@ export default function MovieDetail() {
       axios.get(`${TMDB_DETAIL}/${id}`, {
         params: { api_key: key, append_to_response: 'credits' }
       }),
-      axios.get(`/api/movies/${id}/providers`)
+      axios.get(`${BASE}/api/movies/${id}/providers`)
     ])
       .then(([movieRes, providerRes]) => {
         setMovie(movieRes.data)
